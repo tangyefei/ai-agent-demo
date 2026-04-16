@@ -61,6 +61,16 @@
   font-size: 16px;
 }
 
+.errorMessage {
+  padding: 8px 14px;
+  border-radius: 8px;
+  background-color: #fff2f0;
+  border: 1px solid #ffccc7;
+  color: #cf1322;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 /* ===== 消息行 ===== */
 .messageRow {
   display: flex;
@@ -77,7 +87,7 @@
 
 /* ===== 气泡 ===== */
 .bubble {
-  max-width: 75%;
+  max-width: 100%;
   padding: 12px 16px;
   border-radius: 16px;
   font-size: 15px;
