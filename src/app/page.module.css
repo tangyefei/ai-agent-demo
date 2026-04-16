@@ -1,142 +1,232 @@
+/* ===== 页面布局 ===== */
 .page {
-  --background: #fafafa;
-  --foreground: #fff;
-
-  --text-primary: #000;
-  --text-secondary: #666;
-
-  --button-primary-hover: #383838;
-  --button-secondary-hover: #f2f2f2;
-  --button-secondary-border: #ebebeb;
-
   display: flex;
-  flex: 1;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  height: 100vh;
+  max-width: 800px;
+  margin: 0 auto;
   font-family: var(--font-geist-sans);
   background-color: var(--background);
 }
 
-.main {
+.header {
   display: flex;
-  flex: 1;
-  width: 100%;
-  max-width: 800px;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: space-between;
-  background-color: var(--foreground);
-  padding: 120px 60px;
-}
-
-.intro {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-  gap: 24px;
-}
-
-.intro h1 {
-  max-width: 320px;
-  font-size: 40px;
-  font-weight: 600;
-  line-height: 48px;
-  letter-spacing: -2.4px;
-  text-wrap: balance;
-  color: var(--text-primary);
-}
-
-.intro p {
-  max-width: 440px;
-  font-size: 18px;
-  line-height: 32px;
-  text-wrap: balance;
-  color: var(--text-secondary);
-}
-
-.intro a {
-  font-weight: 500;
-  color: var(--text-primary);
-}
-
-.ctas {
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  max-width: 440px;
-  gap: 16px;
-  font-size: 14px;
-}
-
-.ctas a {
-  display: flex;
-  justify-content: center;
   align-items: center;
-  height: 40px;
-  padding: 0 16px;
-  border-radius: 128px;
-  border: 1px solid transparent;
-  transition: 0.2s;
+  justify-content: center;
+  padding: 16px;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.header h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+/* ===== 消息列表 ===== */
+.messageList {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.emptyState {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-size: 16px;
+}
+
+/* ===== 消息行 ===== */
+.messageRow {
+  display: flex;
+  width: 100%;
+}
+
+.userRow {
+  justify-content: flex-end;
+}
+
+.assistantRow {
+  justify-content: flex-start;
+}
+
+/* ===== 气泡 ===== */
+.bubble {
+  max-width: 75%;
+  padding: 12px 16px;
+  border-radius: 16px;
+  font-size: 15px;
+  line-height: 1.6;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.userBubble {
+  background-color: #007aff;
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+
+.assistantBubble {
+  background-color: #fff;
+  color: #333;
+  border: 1px solid #e5e5e5;
+  border-bottom-left-radius: 4px;
+}
+
+.contentText {
+  margin: 0;
+}
+
+/* ===== 思考过程（灰色折叠区域） ===== */
+.reasoningBlock {
+  margin-bottom: 8px;
+  border-radius: 8px;
+  background-color: #f5f5f5;
+  overflow: hidden;
+}
+
+.reasoningToggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: none;
   cursor: pointer;
-  width: fit-content;
-  font-weight: 500;
+  font-size: 13px;
+  color: #888;
+  font-family: inherit;
 }
 
-a.primary {
-  background: var(--text-primary);
-  color: var(--background);
+.reasoningToggle:hover {
+  color: #555;
+}
+
+.reasoningIcon {
+  font-size: 10px;
+  transition: transform 0.2s;
+}
+
+.reasoningContent {
+  padding: 0 12px 10px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #666;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ===== 输入栏 ===== */
+.inputBar {
+  display: flex;
+  align-items: flex-end;
   gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid #e5e5e5;
+  background-color: var(--background);
 }
 
-a.secondary {
-  border-color: var(--button-secondary-border);
+.textarea {
+  flex: 1;
+  resize: none;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 15px;
+  font-family: inherit;
+  line-height: 1.5;
+  outline: none;
+  transition: border-color 0.2s;
+  background-color: #fff;
+  color: #333;
 }
 
-/* Enable hover only on non-touch devices */
-@media (hover: hover) and (pointer: fine) {
-  a.primary:hover {
-    background: var(--button-primary-hover);
-    border-color: transparent;
-  }
-
-  a.secondary:hover {
-    background: var(--button-secondary-hover);
-    border-color: transparent;
-  }
+.textarea:focus {
+  border-color: #007aff;
 }
 
-@media (max-width: 600px) {
-  .main {
-    padding: 48px 24px;
-  }
-
-  .intro {
-    gap: 16px;
-  }
-
-  .intro h1 {
-    font-size: 32px;
-    line-height: 40px;
-    letter-spacing: -1.92px;
-  }
+.textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
+.sendButton {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 12px;
+  background-color: #007aff;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.sendButton:hover:not(:disabled) {
+  background-color: #0066d6;
+}
+
+.sendButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===== 暗色模式 ===== */
 @media (prefers-color-scheme: dark) {
-  .logo {
-    filter: invert();
+  .header {
+    border-bottom-color: #333;
   }
 
-  .page {
-    --background: #000;
-    --foreground: #000;
+  .assistantBubble {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+    border-color: #333;
+  }
 
-    --text-primary: #ededed;
-    --text-secondary: #999;
+  .reasoningBlock {
+    background-color: #2a2a2a;
+  }
 
-    --button-primary-hover: #ccc;
-    --button-secondary-hover: #1a1a1a;
-    --button-secondary-border: #1a1a1a;
+  .reasoningToggle {
+    color: #999;
+  }
+
+  .reasoningToggle:hover {
+    color: #ccc;
+  }
+
+  .reasoningContent {
+    color: #aaa;
+  }
+
+  .inputBar {
+    border-top-color: #333;
+  }
+
+  .textarea {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+    border-color: #444;
+  }
+
+  .textarea:focus {
+    border-color: #007aff;
+  }
+}
+
+/* ===== 移动端适配 ===== */
+@media (max-width: 600px) {
+  .bubble {
+    max-width: 85%;
   }
 }
