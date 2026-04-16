@@ -15,12 +15,31 @@
   justify-content: center;
   padding: 16px;
   border-bottom: 1px solid #e5e5e5;
+  position: relative;
 }
 
 .header h2 {
   font-size: 18px;
   font-weight: 600;
   color: var(--foreground);
+}
+
+.clearButton {
+  position: absolute;
+  right: 16px;
+  padding: 4px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: none;
+  color: #888;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.clearButton:hover {
+  background-color: #f5f5f5;
+  color: #555;
 }
 
 /* ===== 消息列表 ===== */
@@ -64,7 +83,10 @@
   font-size: 15px;
   line-height: 1.6;
   word-break: break-word;
-  white-space: pre-wrap;
+}
+
+.placeholder {
+  color: #999;
 }
 
 .userBubble {
@@ -181,10 +203,123 @@
   cursor: not-allowed;
 }
 
+.stopButton {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 12px;
+  background-color: #ff3b30;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.stopButton:hover {
+  background-color: #d63029;
+}
+
+/* ===== Markdown 渲染样式 ===== */
+.contentText :global(p) {
+  margin: 0 0 8px;
+}
+
+.contentText :global(p:last-child) {
+  margin-bottom: 0;
+}
+
+.contentText :global(pre) {
+  margin: 8px 0;
+  padding: 12px;
+  border-radius: 8px;
+  background-color: #f6f8fa;
+  overflow-x: auto;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.contentText :global(code) {
+  font-family: var(--font-geist-mono), "Fira Code", "Consolas", monospace;
+  font-size: 13px;
+}
+
+.contentText :global(:not(pre) > code) {
+  padding: 2px 6px;
+  border-radius: 4px;
+  background-color: #f0f0f0;
+  font-size: 0.9em;
+}
+
+.contentText :global(ul),
+.contentText :global(ol) {
+  margin: 4px 0;
+  padding-left: 20px;
+}
+
+.contentText :global(li) {
+  margin: 2px 0;
+}
+
+.contentText :global(blockquote) {
+  margin: 8px 0;
+  padding: 4px 12px;
+  border-left: 3px solid #ddd;
+  color: #666;
+}
+
+.contentText :global(h1),
+.contentText :global(h2),
+.contentText :global(h3),
+.contentText :global(h4) {
+  margin: 12px 0 6px;
+  font-weight: 600;
+}
+
+.contentText :global(h1) { font-size: 1.4em; }
+.contentText :global(h2) { font-size: 1.2em; }
+.contentText :global(h3) { font-size: 1.1em; }
+
+.contentText :global(table) {
+  border-collapse: collapse;
+  margin: 8px 0;
+  width: 100%;
+}
+
+.contentText :global(th),
+.contentText :global(td) {
+  border: 1px solid #ddd;
+  padding: 6px 10px;
+  text-align: left;
+  font-size: 14px;
+}
+
+.contentText :global(th) {
+  background-color: #f6f8fa;
+  font-weight: 600;
+}
+
+.contentText :global(hr) {
+  margin: 12px 0;
+  border: none;
+  border-top: 1px solid #e5e5e5;
+}
+
 /* ===== 暗色模式 ===== */
 @media (prefers-color-scheme: dark) {
   .header {
     border-bottom-color: #333;
+  }
+
+  .clearButton {
+    border-color: #444;
+    color: #999;
+  }
+
+  .clearButton:hover {
+    background-color: #2a2a2a;
+    color: #ccc;
   }
 
   .assistantBubble {
@@ -207,6 +342,32 @@
 
   .reasoningContent {
     color: #aaa;
+  }
+
+  .contentText :global(pre) {
+    background-color: #1e1e1e;
+  }
+
+  .contentText :global(:not(pre) > code) {
+    background-color: #2a2a2a;
+  }
+
+  .contentText :global(blockquote) {
+    border-left-color: #444;
+    color: #aaa;
+  }
+
+  .contentText :global(th) {
+    background-color: #2a2a2a;
+  }
+
+  .contentText :global(th),
+  .contentText :global(td) {
+    border-color: #444;
+  }
+
+  .contentText :global(hr) {
+    border-top-color: #444;
   }
 
   .inputBar {

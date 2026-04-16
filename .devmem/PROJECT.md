@@ -2,4 +2,4 @@
 
 ## api-interfaces
 
-- [POST-api-chat-SSE-流式聊天接口](api-interfaces/POST-api-chat-SSE-流式聊天接口.md)
+- [POST-api-chat-文本流聊天接口](api-interfaces/POST-api-chat-文本流聊天接口.md)

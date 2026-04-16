@@ -1,5 +1,6 @@
 import { createOpenAI } from '@ai-sdk/openai';
-import { streamText } from 'ai';
+import { streamText, convertToModelMessages } from 'ai';
+import type { UIMessage } from 'ai';
 
 // 创建 OpenAI / MiniMax provider（通过环境变量配置 baseURL 和 apiKey）
 const openai = createOpenAI({
@@ -27,53 +28,18 @@ function getModel(provider: string, modelName: string) {
 
 export async function POST(req: Request) {
   try {
-    const { messages, model = 'gpt-4o', provider = 'openai' } = await req.json();
+    const { messages: uiMessages, model = 'gpt-4o', provider = 'openai' } = await req.json();
+
+    // useChat 的 TextStreamChatTransport 发送的是 UIMessage 格式（带 parts），
+    // 需要转换为 streamText 所需的 ModelMessage 格式
+    const modelMessages = await convertToModelMessages(uiMessages as UIMessage[]);
 
     const result = streamText({
       model: getModel(provider, model),
-      messages,
+      messages: modelMessages,
     });
 
-    const encoder = new TextEncoder();
-    const sseStream = new ReadableStream({
-      async start(controller) {
-        try {
-          for await (const part of result.fullStream) {
-            let sseEvent: string | null = null;
-
-            switch (part.type) {
-              case 'reasoning-delta':
-                sseEvent = formatSSE('reasoning', { text: part.text });
-                break;
-              case 'text-delta':
-                sseEvent = formatSSE('text', { text: part.text });
-                break;
-              case 'error':
-                sseEvent = formatSSE('error', { error: String(part.error) });
-                break;
-            }
-
-            if (sseEvent) {
-              controller.enqueue(encoder.encode(sseEvent));
-            }
-          }
-          controller.enqueue(encoder.encode(formatSSE('done', '[DONE]')));
-          controller.close();
-        } catch (streamError) {
-          const errorMessage = streamError instanceof Error ? streamError.message : 'Stream error';
-          controller.enqueue(encoder.encode(formatSSE('error', { error: errorMessage })));
-          controller.close();
-        }
-      },
-    });
-
-    return new Response(sseStream, {
-      headers: {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        Connection: 'keep-alive',
-      },
-    });
+    return result.toTextStreamResponse();
   } catch (error) {
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
@@ -83,11 +49,6 @@ export async function POST(req: Request) {
       },
     );
   }
-}
-
-function formatSSE(event: string, data: unknown): string {
-  const dataString = typeof data === 'string' ? data : JSON.stringify(data);
-  return `event: ${event}\ndata: ${dataString}\n\n`;
 }
 
 // 获取可用模型列表
