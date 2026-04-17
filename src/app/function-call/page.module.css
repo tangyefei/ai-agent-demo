@@ -18,6 +18,17 @@
   text-align: center;
 }
 
+.warning {
+  padding: 12px;
+  background-color: #fef3c7;
+  border: 1px solid #fcd34d;
+  border-radius: 8px;
+  color: #92400e;
+  font-size: 14px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
 .inputSection {
   display: flex;
   flex-direction: column;

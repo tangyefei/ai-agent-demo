@@ -20,12 +20,17 @@ interface FunctionCallResult {
   finishReason: string;
 }
 
+// 支持 tool calling 的 provider
+const TOOL_CALLING_SUPPORTED_PROVIDERS = ['openai', 'ollama'];
+
 export default function FunctionCallPage() {
   const { provider, modelName } = useModel();
   const [prompt, setPrompt] = useState('');
   const [result, setResult] = useState<FunctionCallResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  const isToolCallingSupported = TOOL_CALLING_SUPPORTED_PROVIDERS.includes(provider);
 
   const handleSubmit = async () => {
     if (!prompt.trim()) return;
@@ -63,6 +68,12 @@ export default function FunctionCallPage() {
 
       <h1 className={styles.title}>Function Call 示例</h1>
 
+      {!isToolCallingSupported && (
+        <div className={styles.warning}>
+          当前选择的模型（{provider}）不支持 Tool Calling 功能，请切换到 OpenAI 或 Ollama 模型
+        </div>
+      )}
+
       <div className={styles.inputSection}>
         <textarea
           className={styles.textarea}
@@ -75,7 +86,7 @@ export default function FunctionCallPage() {
         <button
           className={styles.submitButton}
           onClick={handleSubmit}
-          disabled={!prompt.trim() || isLoading}
+          disabled={!prompt.trim() || isLoading || !isToolCallingSupported}
         >
           {isLoading ? '调用中...' : '发送'}
         </button>
