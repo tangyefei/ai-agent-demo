@@ -7,6 +7,9 @@ import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
 import type { UIMessage } from "ai";
 import styles from "./page.module.css";
+import StreamingTable from "@/components/StreamingTable";
+import ModelSelector from "@/components/ModelSelector";
+import { useModel } from "@/contexts/ModelContext";
 
 // ─── 配置常量 ───────────────────────────────────────────────
 
@@ -78,6 +81,9 @@ function getMessageText(message: UIMessage): string {
 // ─── 主页面组件 ─────────────────────────────────────────────
 
 export default function Home() {
+  const { provider, modelName } = useModel();
+  const [activeTab, setActiveTab] = useState<"chat" | "table">("chat");
+
   /**
    * transport 对象必须用 useMemo 缓存，
    * 否则每次渲染都会创建新实例，导致 useChat 重新初始化连接。
@@ -87,11 +93,11 @@ export default function Home() {
       new TextStreamChatTransport({
         api: CHAT_API_ENDPOINT,
         body: {
-          provider: DEFAULT_PROVIDER,
-          model: DEFAULT_MODEL,
+          provider,
+          model: modelName,
         },
       }),
-    [],
+    [provider, modelName],
   );
 
   const { messages, sendMessage, stop, status, setMessages } = useChat({
@@ -141,12 +147,34 @@ export default function Home() {
     <div className={styles.page}>
       <header className={styles.header}>
         <h2>AI Chat</h2>
-        {messages.length > 0 && (
-          <button className={styles.clearButton} onClick={handleClear}>
-            清空
-          </button>
-        )}
+        <div className={styles.headerControls}>
+          <ModelSelector />
+          <div style={{ display: "flex", gap: "8px" }}>
+            <button
+              onClick={() => setActiveTab("chat")}
+              className={activeTab === "chat" ? styles.tabButtonActive : styles.tabButton}
+            >
+              聊天
+            </button>
+            <button
+              onClick={() => setActiveTab("table")}
+              className={activeTab === "table" ? styles.tabButtonActive : styles.tabButton}
+            >
+              表格生成
+            </button>
+          </div>
+          {messages.length > 0 && activeTab === "chat" && (
+            <button className={styles.clearButton} onClick={handleClear}>
+              清空
+            </button>
+          )}
+        </div>
       </header>
+
+      {activeTab === "table" ? (
+        <StreamingTable provider={provider} modelName={modelName} />
+      ) : (
+      <>
 
       <main className={styles.messageList}>
         {messages.length === 0 && (
@@ -188,6 +216,8 @@ export default function Home() {
           </button>
         )}
       </footer>
+      </>
+      )}
     </div>
   );
 }

@@ -11,7 +11,9 @@
       "Bash(npm ls *)",
       "Bash(OPENAI_API_KEY=\"sk-cp-igN_RGwKFPWMwI141mE7WNxV4yxBMzSWwgaInEbByIBHrK69a1CYaJpIeXk8UbzSMlyXmoAOCJxsGPrFNQyaOfFz8TJFEYKPV0Jm0qYgSsF0-DTRXKQb3Cc\" npx tsx *)",
       "Bash(node -e \"require\\('dotenv/config'\\)\")",
-      "Bash(tsx *)"
+      "Bash(tsx *)",
+      "Bash(npx tsc *)",
+      "WebSearch"
     ]
   }
 }

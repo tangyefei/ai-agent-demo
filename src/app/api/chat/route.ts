@@ -11,6 +11,10 @@
 // （如 MiniMax、Ollama 等），只需修改 baseURL 即可。
 import { createOpenAI } from '@ai-sdk/openai';
 
+// @ai-sdk/anthropic：Vercel AI SDK 的 Anthropic 适配器
+// 用于连接 MiniMax 提供的 Anthropic 兼容端点（/v1/messages）
+import { createAnthropic } from '@ai-sdk/anthropic';
+
 // streamText：Vercel AI SDK 的核心函数，用于调用 AI 模型并获取流式文本响应。
 //   - 与 generateText() 的区别：generateText 等待完整结果后一次性返回，
 //     streamText 则逐 token 返回，用户可以看到"打字机效果"。
@@ -49,6 +53,13 @@ const ollama = createOpenAI({
   baseURL: process.env.OLLAMA_BASE_URL || 'http://localhost:11434/v1',
 });
 
+// Anthropic 兼容 Provider（MiniMax 提供）
+// 使用 @ai-sdk/anthropic 连接 Anthropic 兼容端点（/v1/messages）
+const anthropicProvider = createAnthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+  baseURL: process.env.ANTHROPIC_BASE_URL || 'https://api.minimaxi.com/anthropic',
+});
+
 // ============================================================
 // 模型选择
 // ============================================================
@@ -63,6 +74,8 @@ function getModel(provider: string, modelName: string) {
   switch (provider) {
     case 'ollama':
       return ollama.chat(modelName || 'llama3.1:latest');
+    case 'anthropic':
+      return anthropicProvider.chat(modelName || 'MiniMax-M2.7');
     default:
       return openai.chat(modelName || 'gpt-4o');
   }

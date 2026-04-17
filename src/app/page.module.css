@@ -3,7 +3,7 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
-  max-width: 800px;
+  max-width: 1440px;
   margin: 0 auto;
   font-family: var(--font-geist-sans);
   background-color: var(--background);
@@ -12,21 +12,26 @@
 .header {
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 16px;
+  justify-content: space-between;
+  padding: 12px 16px;
   border-bottom: 1px solid #e5e5e5;
-  position: relative;
 }
 
 .header h2 {
   font-size: 18px;
   font-weight: 600;
   color: var(--foreground);
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.headerControls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
 .clearButton {
-  position: absolute;
-  right: 16px;
   padding: 4px 12px;
   border: 1px solid #ddd;
   border-radius: 8px;
@@ -40,6 +45,34 @@
 .clearButton:hover {
   background-color: #f5f5f5;
   color: #555;
+}
+
+.tabButton {
+  padding: 6px 14px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: transparent;
+  color: #666;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+.tabButton:hover {
+  background-color: #f0f0f0;
+}
+
+.tabButtonActive {
+  padding: 6px 14px;
+  border: 1px solid #007aff;
+  border-radius: 8px;
+  background: #007aff;
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
 }
 
 /* ===== 消息列表 ===== */
