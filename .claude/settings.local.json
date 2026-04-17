@@ -6,7 +6,12 @@
       "Bash(npm run *)",
       "Bash(curl -s http://localhost:3000/api/chat)",
       "Bash(curl -s -X POST http://localhost:3000/api/chat -H 'Content-Type: application/json' -d '{\"provider\":\"ollama\",\"model\":\"llama3\",\"messages\":[{\"role\":\"user\",\"content\":\"Say hello in 3 words\"}]}')",
-      "Bash(curl *)"
+      "Bash(curl *)",
+      "Bash(npx tsx *)",
+      "Bash(npm ls *)",
+      "Bash(OPENAI_API_KEY=\"sk-cp-igN_RGwKFPWMwI141mE7WNxV4yxBMzSWwgaInEbByIBHrK69a1CYaJpIeXk8UbzSMlyXmoAOCJxsGPrFNQyaOfFz8TJFEYKPV0Jm0qYgSsF0-DTRXKQb3Cc\" npx tsx *)",
+      "Bash(node -e \"require\\('dotenv/config'\\)\")",
+      "Bash(tsx *)"
     ]
   }
 }
