@@ -117,54 +117,198 @@
   white-space: pre-wrap;
 }
 
-.toolCall {
-  padding: 12px;
-  background-color: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  margin-bottom: 8px;
+/* ===== Markdown 渲染 ===== */
+.markdownContent {
+  font-size: 15px;
+  line-height: 1.7;
+  color: #1f2937;
 }
 
-.toolName {
+.markdownContent :global(p) {
+  margin: 6px 0;
+}
+
+.markdownContent :global(p:last-child) {
+  margin-bottom: 0;
+}
+
+.markdownContent :global(h1),
+.markdownContent :global(h2),
+.markdownContent :global(h3),
+.markdownContent :global(h4) {
+  margin: 14px 0 6px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.markdownContent :global(h1) { font-size: 1.4em; }
+.markdownContent :global(h2) { font-size: 1.2em; }
+.markdownContent :global(h3) { font-size: 1.1em; }
+
+.markdownContent :global(ul),
+.markdownContent :global(ol) {
+  margin: 6px 0;
+  padding-left: 22px;
+}
+
+.markdownContent :global(li) {
+  margin: 3px 0;
+}
+
+.markdownContent :global(code) {
+  background-color: #f3f4f6;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.88em;
+  font-family: 'SF Mono', Monaco, Consolas, 'Courier New', monospace;
+  color: #e11d48;
+}
+
+.markdownContent :global(pre) {
+  background-color: #1f2937;
+  color: #f9fafb;
+  padding: 14px 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 10px 0;
+}
+
+.markdownContent :global(pre code) {
+  background-color: transparent;
+  padding: 0;
+  color: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.markdownContent :global(blockquote) {
+  border-left: 3px solid #3b82f6;
+  padding: 6px 14px;
+  margin: 10px 0;
+  background-color: #eff6ff;
+  color: #1e40af;
+  border-radius: 0 6px 6px 0;
+}
+
+.markdownContent :global(table) {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 10px 0;
+  font-size: 14px;
+}
+
+.markdownContent :global(th),
+.markdownContent :global(td) {
+  border: 1px solid #e5e7eb;
+  padding: 7px 12px;
+  text-align: left;
+}
+
+.markdownContent :global(th) {
+  background-color: #f3f4f6;
+  font-weight: 600;
+}
+
+.markdownContent :global(tr:nth-child(even)) {
+  background-color: #f9fafb;
+}
+
+.markdownContent :global(a) {
+  color: #3b82f6;
+  text-decoration: underline;
+}
+
+.markdownContent :global(hr) {
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: 14px 0;
+}
+
+/* ===== 思考过程 ===== */
+.reasoningBlock {
+  margin-bottom: 10px;
+  border-radius: 8px;
+  background-color: #f5f5f5;
+  overflow: hidden;
+}
+
+/* ===== 工具调用 / 工具结果折叠块 ===== */
+.toolCallBlock {
+  margin-bottom: 8px;
+  border-radius: 8px;
+  background-color: #eff6ff;
+  border: 1px solid #bfdbfe;
+  overflow: hidden;
+}
+
+.toolResultBlock {
+  margin-bottom: 8px;
+  border-radius: 8px;
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  overflow: hidden;
+}
+
+/* ===== 通用折叠按钮 ===== */
+.collapseToggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 13px;
+  color: #6b7280;
+  font-family: inherit;
+  text-align: left;
+}
+
+.collapseToggle:hover {
+  color: #374151;
+}
+
+.collapseIcon {
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.toolBadge {
   display: inline-block;
-  padding: 2px 8px;
+  padding: 1px 8px;
   background-color: #3b82f6;
   color: white;
   border-radius: 4px;
   font-size: 12px;
   font-weight: 500;
-  margin-bottom: 8px;
 }
 
-.args {
-  margin: 0;
-  padding: 8px;
-  background-color: #f6f8fa;
-  border-radius: 4px;
-  font-size: 13px;
-  overflow-x: auto;
-}
-
-.toolResult {
-  padding: 12px;
-  background-color: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  margin-bottom: 8px;
-}
-
-.toolResult .toolName {
+.toolBadgeGreen {
   background-color: #10b981;
 }
 
-.resultContent {
-  margin: 0;
-  padding: 8px;
-  background-color: #f6f8fa;
-  border-radius: 4px;
+.reasoningContent {
+  padding: 0 12px 10px;
   font-size: 13px;
-  overflow-x: auto;
+  line-height: 1.6;
+  color: #666;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
+
+.codeBlock {
+  margin: 0;
+  padding: 10px 14px;
+  background-color: #f6f8fa;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-x: auto;
+  font-family: 'SF Mono', Monaco, Consolas, 'Courier New', monospace;
+  color: #374151;
+  border-top: 1px solid #e5e7eb;
+}
+
 
 .finishReason {
   font-size: 12px;

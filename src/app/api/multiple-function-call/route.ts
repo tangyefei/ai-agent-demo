@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { createOpenAI } from '@ai-sdk/openai';
 import { createAnthropic } from '@ai-sdk/anthropic';
-import { streamText, tool } from 'ai';
+import { streamText, tool, stepCountIs } from 'ai';
 import { z } from 'zod';
 
 // ============================================================
@@ -180,31 +180,33 @@ export async function POST(req: Request) {
       );
     }
 
-    // 定义工具
+    // 定义工具（带 execute，SDK 会自动执行并将结果反馈给模型）
     const tools = {
       weather: tool({
         description: '获取某个城市的天气信息',
         inputSchema: weatherSchema,
+        execute: async (input) => {
+          const result = await executeWeatherTool(input);
+          return result;
+        },
       }),
       exchangeRate: tool({
         description: '货币汇率转换计算',
         inputSchema: exchangeRateSchema,
+        execute: async (input) => {
+          const result = await executeExchangeRateTool(input);
+          return result;
+        },
       }),
     };
 
-    // 收集结果
-    let fullText = '';
-    const toolCalls: Array<{
-      toolCallId: string;
-      toolName: string;
-      input: Record<string, unknown>;
-    }> = [];
-    const toolResults: Array<{
-      toolCallId: string;
-      toolName: string;
-      input: Record<string, unknown>;
-      output: Record<string, unknown>;
-    }> = [];
+    // 收集结果（按时间顺序）
+    const events: Array<
+      | { type: 'text'; content: string }
+      | { type: 'toolCall'; toolCallId: string; toolName: string; input: Record<string, unknown> }
+      | { type: 'toolResult'; toolCallId: string; toolName: string; input: Record<string, unknown>; output: Record<string, unknown> }
+    > = [];
+    const toolCallMap = new Map<string, Record<string, unknown>>();
     let finishReason = '';
     let usage: {
       promptTokens: number;
@@ -217,64 +219,65 @@ export async function POST(req: Request) {
     const result = streamText({
       model: modelInstance,
       tools,
-      maxSteps: 10,
+      stopWhen: stepCountIs(10),
       prompt,
     });
 
     for await (const chunk of result.fullStream) {
       if (chunk.type === 'text-delta') {
-        let delta = '';
-        // @ts-ignore - 尝试多种可能的字段名
-        delta = chunk.textDelta || chunk.text || chunk.content || '';
-        if (typeof delta !== 'string') delta = '';
-        fullText += delta;
+        const delta = (chunk as unknown as { text?: string; textDelta?: string }).textDelta
+          ?? (chunk as unknown as { text?: string }).text
+          ?? '';
+        // 追加到最后一个 text 事件，或创建新的
+        const lastEvent = events[events.length - 1];
+        if (lastEvent && lastEvent.type === 'text') {
+          lastEvent.content += delta;
+        } else {
+          events.push({ type: 'text', content: delta });
+        }
       } else if (chunk.type === 'tool-call') {
-        toolCalls.push({
+        const input = chunk.input as Record<string, unknown>;
+        events.push({
+          type: 'toolCall',
           toolCallId: chunk.toolCallId,
           toolName: chunk.toolName,
-          input: chunk.input as Record<string, unknown>,
+          input,
         });
-
-        // 执行工具
-        if (chunk.toolName === 'weather') {
-          const input = chunk.input as { location: string };
-          const weatherResult = await executeWeatherTool(input);
-          toolResults.push({
-            toolCallId: chunk.toolCallId,
-            toolName: chunk.toolName,
-            input: chunk.input as Record<string, unknown>,
-            output: weatherResult,
-          });
-        } else if (chunk.toolName === 'exchangeRate') {
-          const input = chunk.input as { fromCurrency: string; toCurrency: string; amount: number };
-          const exchangeResult = await executeExchangeRateTool(input);
-          toolResults.push({
-            toolCallId: chunk.toolCallId,
-            toolName: chunk.toolName,
-            input: chunk.input as Record<string, unknown>,
-            output: exchangeResult,
-          });
-        }
+        toolCallMap.set(chunk.toolCallId, input);
+      } else if (chunk.type === 'tool-result') {
+        const toolResult = chunk as unknown as {
+          toolCallId: string;
+          toolName: string;
+          result?: Record<string, unknown>;
+          output?: Record<string, unknown>;
+        };
+        events.push({
+          type: 'toolResult',
+          toolCallId: toolResult.toolCallId,
+          toolName: toolResult.toolName,
+          input: toolCallMap.get(toolResult.toolCallId) || {},
+          output: (toolResult.result ?? toolResult.output ?? {}) as Record<string, unknown>,
+        });
       } else if (chunk.type === 'finish') {
         finishReason = chunk.finishReason;
-        // @ts-ignore - usage 信息
-        if (chunk.usage) {
-          // @ts-ignore
-          usage = chunk.usage;
+        const finishChunk = chunk as unknown as { usage?: { promptTokens: number; completionTokens: number; totalTokens: number } };
+        if (finishChunk.usage) {
+          usage = finishChunk.usage;
         }
       }
     }
 
-    console.log('[multiple-function-call] Stream completed. text length:', fullText.length, 'toolCalls:', toolCalls.length, 'toolResults:', toolResults.length);
+    // 统计 tool call 次数
+    const toolCallCount = events.filter(e => e.type === 'toolCall').length;
+
+    console.log('[multiple-function-call] Stream completed. events:', events.length, 'toolCallCount:', toolCallCount);
 
     return new Response(
       JSON.stringify({
-        text: fullText,
-        toolCalls,
-        toolResults,
+        events,
         finishReason,
         usage,
-        toolCallCount: toolCalls.length,
+        toolCallCount,
       }),
       { headers: { 'Content-Type': 'application/json' } }
     );
