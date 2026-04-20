@@ -1,38 +1,31 @@
 "use client";
 
+// ============================================================
+// ChatUI — 持久化聊天页面的客户端组件
+//
+// 与原 page.tsx 的主要变化：
+//   1. 移除 TextStreamChatTransport（改用默认 DefaultChatTransport）
+//   2. useChat 接收 id + initialMessages（来自服务端）
+//   3. sendMessage 第二参数传入 { body: { provider, model } }
+//   4. API 返回 toUIMessageStreamResponse()，客户端自动解析
+// ============================================================
+
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useChat } from "@ai-sdk/react";
-import { TextStreamChatTransport } from "ai";
+import { DefaultChatTransport } from "ai";
+import type { UIMessage } from "ai";
 import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
-import type { UIMessage } from "ai";
-import styles from "./page.module.css";
+import styles from "./ChatUI.module.css";
 import StreamingTable from "@/components/StreamingTable";
 import ModelSelector from "@/components/ModelSelector";
 import { useModel } from "@/contexts/ModelContext";
 
-// ─── 配置常量 ───────────────────────────────────────────────
-
-/** 聊天 API 的请求地址 */
-const CHAT_API_ENDPOINT = "/api/chat";
-
-/** 默认的模型 Provider（兼容 OpenAI 协议的服务） */
-const DEFAULT_PROVIDER = "openai";
-
-/** 默认使用的模型名称 */
-const DEFAULT_MODEL = "MiniMax-M2.7";
-
 // ─── 工具函数 ───────────────────────────────────────────────
 
 /**
- * 从文本中解析 <think>...</think> 标签，将标签内的内容分离为 reasoning，标签外的内容分离为 content。
- *
- * 为什么使用游标遍历而非正则表达式：
- * MiniMax 模型的思考内容以 <think> 标签包裹在文本流中输出（而非 AI SDK 的 reasoning-delta 事件）。
- * 在流式传输场景下，<think> 和 </think> 标签可能跨多个 chunk 到达，
- * 导致某一时刻文本中存在未闭合的 <think> 标签。
- * 游标方案能正确处理这种中间态——未闭合时将剩余文本暂归为 reasoning，
- * 等后续 chunk 到达并闭合标签后，下次调用会重新解析完整文本得到正确结果。
+ * 从文本中解析 <think>...</think> 标签。
+ * 游标遍历方案可正确处理流式场景下标签跨 chunk 到达的中间态。
  */
 function parseThinkTags(rawText: string): {
   reasoning: string;
@@ -78,36 +71,43 @@ function getMessageText(message: UIMessage): string {
     .join("");
 }
 
-// ─── 主页面组件 ─────────────────────────────────────────────
+// ─── Props ──────────────────────────────────────────────────
 
-export default function Home() {
+interface ChatUIProps {
+  /** 会话唯一 ID，由服务端生成并从 URL 中读取 */
+  id: string;
+  /** 服务端从存储层加载的历史消息 */
+  initialMessages: UIMessage[];
+}
+
+// ─── 主组件 ─────────────────────────────────────────────────
+
+export default function ChatUI({ id, initialMessages }: ChatUIProps) {
   const { provider, modelName } = useModel();
   const [activeTab, setActiveTab] = useState<"chat" | "table">("chat");
 
   /**
-   * transport 对象必须用 useMemo 缓存，
-   * 否则每次渲染都会创建新实例，导致 useChat 重新初始化连接。
+   * 使用 DefaultChatTransport 指向持久化接口 /api/persistent-chat。
+   * provider / model 通过每次 sendMessage 的 body 动态传递，会与 transport 默认 body 合并。
+   * transport 必须用 useMemo 缓存，避免每次渲染都重新初始化连接。
    */
   const transport = useMemo(
-    () =>
-      new TextStreamChatTransport({
-        api: CHAT_API_ENDPOINT,
-        body: {
-          provider,
-          model: modelName,
-        },
-      }),
-    [provider, modelName],
+    () => new DefaultChatTransport({ api: "/api/persistent-chat" }),
+    [],
   );
 
-  const { messages, sendMessage, stop, status, setMessages } = useChat({
+  /**
+   * messages: initialMessages 只在首次创建时生效（服务端历史回显）。
+   */
+  const { messages, sendMessage, stop, status, setMessages, error, clearError } = useChat({
+    id,
+    messages: initialMessages,
     transport,
   });
 
   const isLoading = status === "streaming" || status === "submitted";
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [inputValue, setInputValue] = useState("");
-  const [sendError, setSendError] = useState<string | null>(null);
 
   // 消息列表变化时自动滚动到底部
   useEffect(() => {
@@ -118,16 +118,16 @@ export default function Home() {
     const trimmedInput = inputValue.trim();
     if (!trimmedInput || isLoading) return;
 
-    setSendError(null);
+    if (error) clearError();
     setInputValue("");
 
     try {
-      await sendMessage({ text: trimmedInput });
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "发送失败，请重试";
-      setSendError(errorMessage);
-      console.error("消息发送失败:", error);
+      await sendMessage(
+        { text: trimmedInput },
+        { body: { provider, model: modelName } },
+      );
+    } catch (err) {
+      console.error("消息发送失败:", err);
     }
   }
 
@@ -140,7 +140,7 @@ export default function Home() {
 
   function handleClear() {
     setMessages([]);
-    setSendError(null);
+    if (error) clearError();
   }
 
   return (
@@ -174,49 +174,48 @@ export default function Home() {
       {activeTab === "table" ? (
         <StreamingTable provider={provider} modelName={modelName} />
       ) : (
-      <>
+        <>
+          <main className={styles.messageList}>
+            {messages.length === 0 && (
+              <div className={styles.emptyState}>发送消息开始对话 ✨</div>
+            )}
 
-      <main className={styles.messageList}>
-        {messages.length === 0 && (
-          <div className={styles.emptyState}>发送消息开始对话 ✨</div>
-        )}
+            {messages.map((message) => (
+              <MessageBubble key={message.id} message={message} />
+            ))}
 
-        {messages.map((message) => (
-          <MessageBubble key={message.id} message={message} />
-        ))}
+            {error && (
+              <div className={styles.errorMessage}>⚠️ {error.message}</div>
+            )}
 
-        {sendError && (
-          <div className={styles.errorMessage}>⚠️ {sendError}</div>
-        )}
+            <div ref={messagesEndRef} />
+          </main>
 
-        <div ref={messagesEndRef} />
-      </main>
-
-      <footer className={styles.inputBar}>
-        <textarea
-          className={styles.textarea}
-          value={inputValue}
-          onChange={(event) => setInputValue(event.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="输入消息，Enter 发送，Shift+Enter 换行"
-          rows={1}
-          disabled={isLoading}
-        />
-        {isLoading ? (
-          <button className={styles.stopButton} onClick={stop}>
-            停止
-          </button>
-        ) : (
-          <button
-            className={styles.sendButton}
-            onClick={handleSend}
-            disabled={!inputValue.trim()}
-          >
-            发送
-          </button>
-        )}
-      </footer>
-      </>
+          <footer className={styles.inputBar}>
+            <textarea
+              className={styles.textarea}
+              value={inputValue}
+              onChange={(event) => setInputValue(event.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="输入消息，Enter 发送，Shift+Enter 换行"
+              rows={1}
+              disabled={isLoading}
+            />
+            {isLoading ? (
+              <button className={styles.stopButton} onClick={stop}>
+                停止
+              </button>
+            ) : (
+              <button
+                className={styles.sendButton}
+                onClick={handleSend}
+                disabled={!inputValue.trim()}
+              >
+                发送
+              </button>
+            )}
+          </footer>
+        </>
       )}
     </div>
   );
@@ -229,7 +228,6 @@ function MessageBubble({ message }: { message: UIMessage }) {
   const isUser = message.role === "user";
   const rawText = getMessageText(message);
 
-  // 缓存 parseThinkTags 的解析结果，避免每次渲染都重新遍历整段文本
   const { reasoning, content } = useMemo(
     () => (isUser ? { reasoning: "", content: rawText } : parseThinkTags(rawText)),
     [isUser, rawText],

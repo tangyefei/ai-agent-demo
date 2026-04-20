@@ -108,34 +108,16 @@ export async function POST(req: Request) {
     const { messages: uiMessages, model = 'gpt-4o', provider = 'openai' } = await req.json();
 
     // 格式转换：UIMessage → ModelMessage
-    // 前端 useChat 发送的消息是 UIMessage 格式：
-    //   { id: "abc", role: "user", parts: [{ type: "text", text: "你好" }] }
-    // 但 streamText() 需要 ModelMessage 格式：
-    //   { role: "user", content: "你好" }
-    // convertToModelMessages() 负责这个转换，它会：
-    //   1. 提取 parts 中的文本内容拼接为 content
-    //   2. 去掉 id 等前端专用字段
-    //   3. 处理多模态内容（如图片、文件等）
     const modelMessages = await convertToModelMessages(uiMessages as UIMessage[]);
 
     // 调用 AI 模型进行流式文本生成
-    // streamText() 不会等待完整结果，而是立即返回一个包含流式数据的对象。
-    // 内部流程：
-    //   1. 将 ModelMessage 发送给 AI 模型的 /chat/completions 端点
-    //   2. AI 模型逐 token 生成文本，通过 SSE 返回
-    //   3. AI SDK 将 SSE 解析为内部的流式数据结构
     const result = streamText({
       model: getModel(provider, model),
       messages: modelMessages,
     });
 
-    // 将流式结果转换为 HTTP Response
-    // toTextStreamResponse() 会：
-    //   1. 创建一个 ReadableStream，将 AI 模型的输出逐块编码为 UTF-8 文本
-    //   2. 设置 Content-Type 为 text/plain; charset=utf-8
-    //   3. 返回一个标准的 Web Response 对象
-    // 前端的 TextStreamChatTransport 会读取这个文本流，
-    // 将每个文本块追加到当前 assistant 消息的 parts 中
+    // 将流式结果转换为 HTTP Response（text/plain 纯文本流）
+    // 前端的 TextStreamChatTransport 会读取这个文本流
     return result.toTextStreamResponse();
   } catch (error) {
     // 错误处理：返回 500 状态码和错误信息的 JSON

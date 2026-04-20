@@ -1,0 +1,436 @@
+/* ===== 页面布局 ===== */
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  max-width: 1440px;
+  margin: 0 auto;
+  font-family: var(--font-geist-sans);
+  background-color: var(--background);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.header h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--foreground);
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.headerControls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.clearButton {
+  padding: 4px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: none;
+  color: #888;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.clearButton:hover {
+  background-color: #f5f5f5;
+  color: #555;
+}
+
+.tabButton {
+  padding: 6px 14px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: transparent;
+  color: #666;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+.tabButton:hover {
+  background-color: #f0f0f0;
+}
+
+.tabButtonActive {
+  padding: 6px 14px;
+  border: 1px solid #007aff;
+  border-radius: 8px;
+  background: #007aff;
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+/* ===== 消息列表 ===== */
+.messageList {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.emptyState {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-size: 16px;
+}
+
+.errorMessage {
+  padding: 8px 14px;
+  border-radius: 8px;
+  background-color: #fff2f0;
+  border: 1px solid #ffccc7;
+  color: #cf1322;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ===== 消息行 ===== */
+.messageRow {
+  display: flex;
+  width: 100%;
+}
+
+.userRow {
+  justify-content: flex-end;
+}
+
+.assistantRow {
+  justify-content: flex-start;
+}
+
+/* ===== 气泡 ===== */
+.bubble {
+  max-width: 100%;
+  padding: 12px 16px;
+  border-radius: 16px;
+  font-size: 15px;
+  line-height: 1.6;
+  word-break: break-word;
+}
+
+.placeholder {
+  color: #999;
+}
+
+.userBubble {
+  background-color: #007aff;
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+
+.assistantBubble {
+  background-color: #fff;
+  color: #333;
+  border: 1px solid #e5e5e5;
+  border-bottom-left-radius: 4px;
+}
+
+.contentText {
+  margin: 0;
+}
+
+/* ===== 思考过程（灰色折叠区域） ===== */
+.reasoningBlock {
+  margin-bottom: 8px;
+  border-radius: 8px;
+  background-color: #f5f5f5;
+  overflow: hidden;
+}
+
+.reasoningToggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 13px;
+  color: #888;
+  font-family: inherit;
+}
+
+.reasoningToggle:hover {
+  color: #555;
+}
+
+.reasoningIcon {
+  font-size: 10px;
+  transition: transform 0.2s;
+}
+
+.reasoningContent {
+  padding: 0 12px 10px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #666;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ===== 输入栏 ===== */
+.inputBar {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid #e5e5e5;
+  background-color: var(--background);
+}
+
+.textarea {
+  flex: 1;
+  resize: none;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 15px;
+  font-family: inherit;
+  line-height: 1.5;
+  outline: none;
+  transition: border-color 0.2s;
+  background-color: #fff;
+  color: #333;
+}
+
+.textarea:focus {
+  border-color: #007aff;
+}
+
+.textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.sendButton {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 12px;
+  background-color: #007aff;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.sendButton:hover:not(:disabled) {
+  background-color: #0066d6;
+}
+
+.sendButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.stopButton {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 12px;
+  background-color: #ff3b30;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.stopButton:hover {
+  background-color: #d63029;
+}
+
+/* ===== Markdown 渲染样式 ===== */
+.contentText :global(p) {
+  margin: 0 0 8px;
+}
+
+.contentText :global(p:last-child) {
+  margin-bottom: 0;
+}
+
+.contentText :global(pre) {
+  margin: 8px 0;
+  padding: 12px;
+  border-radius: 8px;
+  background-color: #f6f8fa;
+  overflow-x: auto;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.contentText :global(code) {
+  font-family: var(--font-geist-mono), "Fira Code", "Consolas", monospace;
+  font-size: 13px;
+}
+
+.contentText :global(:not(pre) > code) {
+  padding: 2px 6px;
+  border-radius: 4px;
+  background-color: #f0f0f0;
+  font-size: 0.9em;
+}
+
+.contentText :global(ul),
+.contentText :global(ol) {
+  margin: 4px 0;
+  padding-left: 20px;
+}
+
+.contentText :global(li) {
+  margin: 2px 0;
+}
+
+.contentText :global(blockquote) {
+  margin: 8px 0;
+  padding: 4px 12px;
+  border-left: 3px solid #ddd;
+  color: #666;
+}
+
+.contentText :global(h1),
+.contentText :global(h2),
+.contentText :global(h3),
+.contentText :global(h4) {
+  margin: 12px 0 6px;
+  font-weight: 600;
+}
+
+.contentText :global(h1) { font-size: 1.4em; }
+.contentText :global(h2) { font-size: 1.2em; }
+.contentText :global(h3) { font-size: 1.1em; }
+
+.contentText :global(table) {
+  border-collapse: collapse;
+  margin: 8px 0;
+  width: 100%;
+}
+
+.contentText :global(th),
+.contentText :global(td) {
+  border: 1px solid #ddd;
+  padding: 6px 10px;
+  text-align: left;
+  font-size: 14px;
+}
+
+.contentText :global(th) {
+  background-color: #f6f8fa;
+  font-weight: 600;
+}
+
+.contentText :global(hr) {
+  margin: 12px 0;
+  border: none;
+  border-top: 1px solid #e5e5e5;
+}
+
+/* ===== 暗色模式 ===== */
+@media (prefers-color-scheme: dark) {
+  .header {
+    border-bottom-color: #333;
+  }
+
+  .clearButton {
+    border-color: #444;
+    color: #999;
+  }
+
+  .clearButton:hover {
+    background-color: #2a2a2a;
+    color: #ccc;
+  }
+
+  .assistantBubble {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+    border-color: #333;
+  }
+
+  .reasoningBlock {
+    background-color: #2a2a2a;
+  }
+
+  .reasoningToggle {
+    color: #999;
+  }
+
+  .reasoningToggle:hover {
+    color: #ccc;
+  }
+
+  .reasoningContent {
+    color: #aaa;
+  }
+
+  .contentText :global(pre) {
+    background-color: #1e1e1e;
+  }
+
+  .contentText :global(:not(pre) > code) {
+    background-color: #2a2a2a;
+  }
+
+  .contentText :global(blockquote) {
+    border-left-color: #444;
+    color: #aaa;
+  }
+
+  .contentText :global(th) {
+    background-color: #2a2a2a;
+  }
+
+  .contentText :global(th),
+  .contentText :global(td) {
+    border-color: #444;
+  }
+
+  .contentText :global(hr) {
+    border-top-color: #444;
+  }
+
+  .inputBar {
+    border-top-color: #333;
+  }
+
+  .textarea {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+    border-color: #444;
+  }
+
+  .textarea:focus {
+    border-color: #007aff;
+  }
+}
+
+/* ===== 移动端适配 ===== */
+@media (max-width: 600px) {
+  .bubble {
+    max-width: 85%;
+  }
+}
