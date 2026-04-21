@@ -13,6 +13,7 @@
     "@ai-sdk/openai": "^3.0.53",
     "@ai-sdk/react": "^3.0.164",
     "@anthropic-ai/sdk": "^0.90.0",
+    "@neondatabase/serverless": "^1.1.0",
     "ai": "^6.0.162",
     "dotenv": "^17.4.2",
     "next": "16.2.4",

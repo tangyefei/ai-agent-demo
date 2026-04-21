@@ -80,7 +80,13 @@ export async function POST(req: Request) {
     return result.toUIMessageStreamResponse({
       originalMessages: validatedMessages,
       onFinish: async ({ messages: updatedMessages }) => {
-        await saveChat(id, updatedMessages);
+        try {
+          console.log('[persistent-chat] onFinish: saving', updatedMessages.length, 'messages for id:', id);
+          await saveChat(id, updatedMessages);
+          console.log('[persistent-chat] onFinish: saveChat completed');
+        } catch (err) {
+          console.error('[persistent-chat] onFinish: saveChat FAILED:', err);
+        }
       },
     });
   } catch (error) {
