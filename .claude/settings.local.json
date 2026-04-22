@@ -13,7 +13,9 @@
       "Bash(node -e \"require\\('dotenv/config'\\)\")",
       "Bash(tsx *)",
       "Bash(npx tsc *)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(lsof -ti:3000)",
+      "Bash(xargs kill *)"
     ]
   }
 }

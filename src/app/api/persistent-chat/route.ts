@@ -10,7 +10,7 @@
 
 import { createOpenAI } from '@ai-sdk/openai';
 import { createAnthropic } from '@ai-sdk/anthropic';
-import { streamText, convertToModelMessages, validateUIMessages } from 'ai';
+import { streamText, convertToModelMessages, validateUIMessages, generateText, generateId } from 'ai';
 import type { UIMessage } from 'ai';
 import { saveChat } from '@/util/chat-store';
 
@@ -42,6 +42,33 @@ function getModel(provider: string, modelName: string) {
   }
 }
 
+// ─── 自动摘要 ────────────────────────────────────────────────
+
+/** 消息条数阈值，超过此值触发自动摘要压缩 */
+const SUMMARY_THRESHOLD = 20;
+
+/**
+ * 将消息历史压缩为一条摘要消息。
+ * 使用 generateText（同步，非流式）调用模型生成摘要。
+ */
+async function summarizeMessages(
+  messages: UIMessage[],
+  provider: string,
+  model: string,
+): Promise<UIMessage> {
+  const { text } = await generateText({
+    model: getModel(provider, model),
+    system: '你是一个对话摘要助手。请将以下对话历史压缩成一段摘要，保留所有关键信息（用户的问题、AI的回答要点）。摘要要足够详细，使AI可以基于它继续对话。',
+    messages: await convertToModelMessages(messages),
+  });
+
+  return {
+    id: generateId(),
+    role: 'assistant',
+    parts: [{ type: 'text' as const, text: `[对话摘要]\n\n${text}` }],
+  };
+}
+
 // ─── POST /api/persistent-chat ───────────────────────────────
 //
 // DefaultChatTransport 发送完整的 messages 数组（非单条 message），
@@ -70,15 +97,24 @@ export async function POST(req: Request) {
       tools: {},
     });
 
+    // 自动摘要：超过阈值时压缩历史，只保留 [摘要, 最新用户消息]
+    let messagesToSend = validatedMessages;
+    if (validatedMessages.length > SUMMARY_THRESHOLD) {
+      console.log('[persistent-chat] messages', validatedMessages.length, '> threshold', SUMMARY_THRESHOLD, '→ summarizing...');
+      const summaryMessage = await summarizeMessages(validatedMessages, provider, model);
+      messagesToSend = [summaryMessage, validatedMessages[validatedMessages.length - 1]];
+      console.log('[persistent-chat] summarized to', messagesToSend.length, 'messages');
+    }
+
     // 调用 AI 模型生成流式响应
     const result = streamText({
       model: getModel(provider, model),
-      messages: await convertToModelMessages(validatedMessages),
+      messages: await convertToModelMessages(messagesToSend),
     });
 
     // 返回 UI 消息流，onFinish 在模型回复完成后持久化完整消息列表
     return result.toUIMessageStreamResponse({
-      originalMessages: validatedMessages,
+      originalMessages: messagesToSend,
       onFinish: async ({ messages: updatedMessages }) => {
         try {
           console.log('[persistent-chat] onFinish: saving', updatedMessages.length, 'messages for id:', id);
